@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
+import { logout as logoutSlice } from "../store/features/authSlice";
+import authService from "../appwrite/auth";
 
 const NAV_LINKS = [
   {
@@ -30,10 +33,23 @@ const NAV_LINKS = [
 ];
 
 export default function Header() {
+  const authStatus = useSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const logout = () => {
+    try {
+      authService.logout().then(() => {
+        dispatch(logoutSlice());
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
+    console.log(authStatus);
     const handler = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
@@ -54,7 +70,7 @@ export default function Header() {
           className="flex items-center gap-2.5 text-white font-extrabold text-xl tracking-widest no-underline"
         >
           <span className="w-2 h-2 rounded-full bg-[#7c5cbf] animate-pulse-dot flex-shrink-0" />
-          THE QUILL
+          ZORVIA
         </NavLink>
 
         {/* ── Desktop Nav ── */}
@@ -85,18 +101,29 @@ export default function Header() {
 
         {/* ── Desktop CTAs ── */}
         <div className="hidden md:flex items-center gap-2.5">
-          <NavLink
-            to={"/login"}
-            className="px-4 py-2 text-sm font-medium text-white bg-white/30 border border-white/[0.12] rounded-lg hover:bg-white/[0.12] hover:border-white/20 hover:-translate-y-px transition-all duration-200 no-underline"
-          >
-            Log in
-          </NavLink>
-          <NavLink
-            to={"/signup"}
-            className="px-4 py-2 text-sm font-semibold text-white bg-[#7c5cbf] rounded-lg hover:bg-[#6a4caa] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(124,92,191,0.4)] transition-all duration-200 no-underline"
-          >
-            Get Started
-          </NavLink>
+          {authStatus ? (
+            (<div
+                onClick={logout}
+                className="px-4 py-2 text-sm cursor-pointer font-semibold text-white bg-[#7c5cbf] rounded-lg hover:bg-[#6a4caa] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(124,92,191,0.4)] transition-all duration-200 no-underline"
+              >
+                Logout
+              </div>)
+          ) : (
+            <div className="hidden md:flex items-center gap-2.5">
+              <NavLink
+                to={"/login"}
+                className="px-4 py-2 text-sm font-medium text-white bg-white/30 border border-white/[0.12] rounded-lg hover:bg-white/[0.12] hover:border-white/20 hover:-translate-y-px transition-all duration-200 no-underline"
+              >
+                Log in
+              </NavLink>
+              <NavLink
+                to={"/signup"}
+                className="px-4 py-2 text-sm font-semibold text-white bg-[#7c5cbf] rounded-lg hover:bg-[#6a4caa] hover:-translate-y-px hover:shadow-[0_6px_24px_rgba(124,92,191,0.4)] transition-all duration-200 no-underline"
+              >
+                Get Started
+              </NavLink>
+            </div>
+          )}
         </div>
 
         {/* ── Mobile Hamburger ── */}
@@ -152,20 +179,31 @@ export default function Header() {
               </NavLink>
             ) : null,
           )}
-          <div className="flex gap-2.5 mt-5">
-            <NavLink
-              to={"/login"}
-              className="flex-1 text-center px-4 py-2.5 text-sm font-medium text-white/80 bg-white/[0.07] border border-white/[0.12] rounded-lg hover:bg-white/[0.12] transition-all no-underline"
-            >
-              Log in
-            </NavLink>
-            <NavLink
-              to={"/signup"}
-              className="flex-1 text-center px-4 py-2.5 text-sm font-semibold text-white bg-[#7c5cbf] rounded-lg hover:bg-[#6a4caa] transition-all no-underline"
-            >
-              Get Started
-            </NavLink>
-          </div>
+          {!authStatus ? (
+            <div className="flex gap-2.5 mt-5">
+              <div
+                onClick={logout}
+                className="flex-1 text-center px-4 py-2.5 text-sm font-medium text-white/80 bg-white/[0.07] border border-white/[0.12] rounded-lg hover:bg-white/[0.12] transition-all no-underline"
+              >
+                Log in
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2.5 mt-5">
+              <NavLink
+                to={"/login"}
+                className="flex-1 text-center px-4 py-2.5 text-sm font-medium text-white/80 bg-white/[0.07] border border-white/[0.12] rounded-lg hover:bg-white/[0.12] transition-all no-underline"
+              >
+                Log in
+              </NavLink>
+              <NavLink
+                to={"/signup"}
+                className="flex-1 text-center px-4 py-2.5 text-sm font-semibold text-white bg-[#7c5cbf] rounded-lg hover:bg-[#6a4caa] transition-all no-underline"
+              >
+                Get Started
+              </NavLink>
+            </div>
+          )}
         </div>
       )}
     </header>
