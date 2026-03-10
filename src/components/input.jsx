@@ -7,6 +7,7 @@ function input(
     placeholder = "Please enter value",
     className = "",
     hasError = false,
+    readonly = false,
     ...props
   },
   ref,
@@ -16,10 +17,11 @@ function input(
   return (
     <>
       <div>
-        {label ? <label htmlFor={InputId}>{label}</label> : null}
+        {label ? <label htmlFor={InputId}>{label} </label> : null}
         <input
           id={InputId}
           type={type}
+          readOnly={readonly}
           placeholder={placeholder}
           ref={ref}
           className={`w-full bg-white/[0.07] border rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/30 outline-none transition-all duration-200

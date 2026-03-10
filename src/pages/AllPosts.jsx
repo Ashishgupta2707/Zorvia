@@ -1,154 +1,7 @@
-import { useState } from "react";
-
-/* ─── Mock Data ─────────────────────────────────────────────────────────── */
-const POSTS = [
-  {
-    id: 1,
-    title:
-      "GPT-5 and Beyond: What the Next Generation of Language Models Will Look Like",
-    category: "AI & ML",
-    author: "Sarah Mitchell",
-    date: "28 Feb 2026",
-    readTime: "8 min",
-    status: "Published",
-    views: 4821,
-    image:
-      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=120&q=80",
-  },
-  {
-    id: 2,
-    title: "Why Rust Is Eating C++ for Breakfast in Systems Programming",
-    category: "Programming",
-    author: "Daniel Okafor",
-    date: "27 Feb 2026",
-    readTime: "6 min",
-    status: "Published",
-    views: 3102,
-    image:
-      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=120&q=80",
-  },
-  {
-    id: 3,
-    title: "Zero Trust Architecture: Stop Assuming Your Network Is Safe",
-    category: "Cybersecurity",
-    author: "Elena Kovacs",
-    date: "26 Feb 2026",
-    readTime: "7 min",
-    status: "Draft",
-    views: 0,
-    image:
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=120&q=80",
-  },
-  {
-    id: 4,
-    title: "Feature Engineering Is Still the Most Underrated Skill in ML",
-    category: "Data Science",
-    author: "Rahul Sharma",
-    date: "25 Feb 2026",
-    readTime: "9 min",
-    status: "Published",
-    views: 2789,
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=120&q=80",
-  },
-  {
-    id: 5,
-    title: "React Server Components in Production: Six Months Later",
-    category: "Web Dev",
-    author: "Aisha Patel",
-    date: "23 Feb 2026",
-    readTime: "5 min",
-    status: "Published",
-    views: 5634,
-    image:
-      "https://images.unsplash.com/photo-1587620962725-abab19836100?w=120&q=80",
-  },
-  {
-    id: 6,
-    title: "Vector Databases Explained: The Engine Behind Modern AI Search",
-    category: "AI & ML",
-    author: "Chris Nakamura",
-    date: "22 Feb 2026",
-    readTime: "11 min",
-    status: "Draft",
-    views: 0,
-    image:
-      "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=120&q=80",
-  },
-  {
-    id: 7,
-    title:
-      "What I Learned From 200 Technical Interviews on Both Sides of the Table",
-    category: "Career",
-    author: "Laura Brennan",
-    date: "21 Feb 2026",
-    readTime: "6 min",
-    status: "Published",
-    views: 7213,
-    image:
-      "https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=120&q=80",
-  },
-  {
-    id: 8,
-    title: "Clean Code Is a Myth — Write Honest Code Instead",
-    category: "Programming",
-    author: "Tom Eriksson",
-    date: "19 Feb 2026",
-    readTime: "8 min",
-    status: "Published",
-    views: 3987,
-    image:
-      "https://images.unsplash.com/photo-1569396116180-210c182bedb8?w=120&q=80",
-  },
-  {
-    id: 9,
-    title: "Quantum Computing in 2026: Hype vs. What's Actually Shipping",
-    category: "Science",
-    author: "Nina Johansson",
-    date: "17 Feb 2026",
-    readTime: "10 min",
-    status: "Draft",
-    views: 0,
-    image:
-      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=120&q=80",
-  },
-  {
-    id: 10,
-    title: "How Large Language Models Are Reshaping the Way We Build Software",
-    category: "AI & ML",
-    author: "James Thornton",
-    date: "24 Feb 2026",
-    readTime: "10 min",
-    status: "Published",
-    views: 9104,
-    image:
-      "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=120&q=80",
-  },
-  {
-    id: 11,
-    title: "System Design Principles Every Senior Engineer Should Know",
-    category: "Programming",
-    author: "Priya Nair",
-    date: "20 Feb 2026",
-    readTime: "12 min",
-    status: "Published",
-    views: 6450,
-    image:
-      "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=120&q=80",
-  },
-  {
-    id: 12,
-    title: "The Rise of Real-Time ML: Serving Models at Millisecond Latency",
-    category: "Data Science",
-    author: "Marcus Webb",
-    date: "16 Feb 2026",
-    readTime: "9 min",
-    status: "Published",
-    views: 2341,
-    image:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&q=80",
-  },
-];
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import appwriteService from "../appwrite/post";
 
 const CATEGORIES = [
   "All",
@@ -160,21 +13,32 @@ const CATEGORIES = [
   "Career",
   "Science",
 ];
-const STATUSES = ["All", "Published", "Draft"];
+const STATUSES = ["All", "Active", "Inactive"];
+
 const STATUS_STYLE = {
-  Published: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-  Draft: "bg-amber-500/15  text-amber-400  border-amber-500/25",
+  Active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
+  Inactive: "bg-red-500/15    text-red-400    border-red-500/25",
+};
+
+const CAT_COLOR = {
+  "AI & ML": "bg-violet-500/15  text-violet-400  border-violet-500/25",
+  Programming: "bg-blue-500/15    text-blue-400    border-blue-500/25",
+  "Data Science": "bg-cyan-500/15    text-cyan-400    border-cyan-500/25",
+  "Web Dev": "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
+  Cybersecurity: "bg-red-500/15     text-red-400     border-red-500/25",
+  Career: "bg-amber-500/15   text-amber-400   border-amber-500/25",
+  Science: "bg-pink-500/15    text-pink-400    border-pink-500/25",
 };
 
 /* ─── Delete Modal ───────────────────────────────────────────────────────── */
-function DeleteModal({ post, onConfirm, onCancel }) {
+function DeleteModal({ post, onConfirm, onCancel, deleting }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-7 max-w-sm w-full shadow-[0_32px_80px_rgba(0,0,0,0.6)] au1">
+      <div className="relative bg-[#1a1a2e] border border-white/10 rounded-2xl p-7 max-w-sm w-full shadow-[0_32px_80px_rgba(0,0,0,0.6)]">
         <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/25 flex items-center justify-center mx-auto mb-5">
           <svg
             width="22"
@@ -193,21 +57,34 @@ function DeleteModal({ post, onConfirm, onCancel }) {
           Delete Post?
         </h3>
         <p className="text-white/45 text-sm text-center leading-relaxed mb-6">
-          "<span className="text-white/70">{post?.title?.slice(0, 50)}…</span>"
-          will be permanently removed.
+          "
+          <span className="text-white/70">
+            {post?.title?.slice(0, 50)}
+            {post?.title?.length > 50 ? "…" : ""}
+          </span>
+          " will be permanently removed.
         </p>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/25 hover:text-white transition-all"
+            disabled={deleting}
+            className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:border-white/25 hover:text-white transition-all disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-all"
+            disabled={deleting}
+            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-all disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            Delete
+            {deleting ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </button>
         </div>
       </div>
@@ -215,31 +92,82 @@ function DeleteModal({ post, onConfirm, onCancel }) {
   );
 }
 
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+function SkeletonRow() {
+  return (
+    <div className="bg-[#16162a] border border-white/[0.07] rounded-2xl p-4 flex items-center gap-4 animate-pulse">
+      <div className="w-[60px] h-[60px] rounded-xl bg-white/[0.06] flex-shrink-0" />
+      <div className="flex-1 space-y-2.5">
+        <div className="flex gap-2">
+          <div className="h-4 w-16 rounded-md bg-white/[0.06]" />
+          <div className="h-4 w-12 rounded-md bg-white/[0.06]" />
+        </div>
+        <div className="h-4 w-3/4 rounded bg-white/[0.06]" />
+        <div className="h-3 w-1/2 rounded bg-white/[0.05]" />
+      </div>
+    </div>
+  );
+}
+
 /* ─── AllPosts Page ──────────────────────────────────────────────────────── */
 export default function AllPosts() {
-  const [posts, setPosts] = useState(POSTS);
+  const navigate = useNavigate();
+  const userData = useSelector((state) => state.auth.userData);
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeCategory, setActiveCat] = useState("All");
   const [activeStatus, setActiveStatus] = useState("All");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [page, setPage] = useState(1);
   const PER_PAGE = 8;
+
+  useEffect(() => {
+    appwriteService
+      .getAllPosts([])
+      .then((res) => {
+        if (res?.documents) setPosts(res.documents);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load posts. Please try again.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await appwriteService.deletePost(deleteTarget.$id);
+      if (deleteTarget.featuredImage)
+        await appwriteService.deleteFile(deleteTarget.featuredImage);
+      setPosts((prev) => prev.filter((p) => p.$id !== deleteTarget.$id));
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete post.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filtered = posts
     .filter((p) => activeCategory === "All" || p.category === activeCategory)
     .filter((p) => activeStatus === "All" || p.status === activeStatus)
     .filter(
       (p) =>
-        p.title.toLowerCase().includes(search.toLowerCase()) ||
-        p.author.toLowerCase().includes(search.toLowerCase()),
+        (p.title || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.authorName || "").toLowerCase().includes(search.toLowerCase()), // ✅ search by author name
     )
     .sort((a, b) =>
-      sortBy === "popular"
-        ? b.views - a.views
-        : sortBy === "oldest"
-          ? a.id - b.id
-          : b.id - a.id,
+      sortBy === "oldest"
+        ? new Date(a.$createdAt) - new Date(b.$createdAt)
+        : new Date(b.$createdAt) - new Date(a.$createdAt),
     );
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -247,28 +175,33 @@ export default function AllPosts() {
 
   const stats = {
     total: posts.length,
-    published: posts.filter((p) => p.status === "Published").length,
-    draft: posts.filter((p) => p.status === "Draft").length,
-    views: posts.reduce((s, p) => s + p.views, 0),
+    active: posts.filter((p) => p.status === "Active").length,
+    inactive: posts.filter((p) => p.status === "Inactive").length,
   };
+
+  const formatDate = (iso) =>
+    iso
+      ? new Date(iso).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "—";
 
   return (
     <div className="bg-[#0e0e1c] min-h-screen text-white">
-
       {deleteTarget && (
         <DeleteModal
           post={deleteTarget}
-          onConfirm={() => {
-            setPosts((p) => p.filter((x) => x.id !== deleteTarget.id));
-            setDeleteTarget(null);
-          }}
+          onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
+          deleting={deleting}
         />
       )}
 
       <div className="max-w-[1200px] mx-auto px-8 pt-28 pb-20">
-        {/* ── Page heading ── */}
-        <div className="au1 flex items-center justify-between flex-wrap gap-4 mb-8">
+        {/* Page heading */}
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
           <div>
             <p className="text-[#7c5cbf] text-xs font-bold tracking-[0.2em] uppercase mb-1.5">
               Manage Content
@@ -277,9 +210,9 @@ export default function AllPosts() {
               All Posts
             </h1>
           </div>
-          <a
-            href="/add-post"
-            className="flex items-center gap-2 bg-[#7c5cbf] hover:bg-[#6a4caa] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(124,92,191,0.4)] transition-all duration-200 no-underline"
+          <button
+            onClick={() => navigate("/add-post")}
+            className="flex items-center gap-2 bg-[#7c5cbf] hover:bg-[#6a4caa] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(124,92,191,0.4)] transition-all duration-200"
           >
             <svg
               width="16"
@@ -292,39 +225,49 @@ export default function AllPosts() {
               <path d="M12 5v14M5 12h14" />
             </svg>
             New Post
-          </a>
+          </button>
         </div>
 
-        {/* ── Stats strip ── */}
-        <div className="au2 grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        {error && (
+          <div className="mb-6 flex items-center gap-3 bg-red-500/15 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            {error}
+          </div>
+        )}
+
+        {/* Stats strip */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
           {[
             {
               label: "Total Posts",
               value: stats.total,
               icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-              color: "text-blue-400",
-              bg: "bg-blue-500/10 border-blue-500/20",
+              color: "text-[#c4a8f0]",
+              bg: "bg-[#7c5cbf]/10 border-[#7c5cbf]/20",
             },
             {
-              label: "Published",
-              value: stats.published,
+              label: "Active",
+              value: stats.active,
               icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
               color: "text-emerald-400",
               bg: "bg-emerald-500/10 border-emerald-500/20",
             },
             {
-              label: "Drafts",
-              value: stats.draft,
-              icon: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z",
-              color: "text-amber-400",
-              bg: "bg-amber-500/10 border-amber-500/20",
-            },
-            {
-              label: "Total Views",
-              value: stats.views.toLocaleString(),
-              icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
-              color: "text-[#c4a8f0]",
-              bg: "bg-[#7c5cbf]/10 border-[#7c5cbf]/20",
+              label: "Inactive",
+              value: stats.inactive,
+              icon: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
+              color: "text-red-400",
+              bg: "bg-red-500/10 border-red-500/20",
             },
           ].map((s) => (
             <div
@@ -360,11 +303,10 @@ export default function AllPosts() {
           ))}
         </div>
 
-        {/* ── Sidebar + list ── */}
+        {/* Sidebar + list */}
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
           {/* Sidebar */}
-          <aside className="au3 space-y-7">
-            {/* Search */}
+          <aside className="space-y-7">
             <div className="relative">
               <svg
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
@@ -380,7 +322,7 @@ export default function AllPosts() {
               </svg>
               <input
                 type="text"
-                placeholder="Search posts..."
+                placeholder="Search title or author..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -390,7 +332,6 @@ export default function AllPosts() {
               />
             </div>
 
-            {/* Category */}
             <div>
               <p className="text-white/30 text-[10px] font-bold tracking-[0.18em] uppercase mb-3">
                 Category
@@ -408,10 +349,10 @@ export default function AllPosts() {
                         setActiveCat(cat);
                         setPage(1);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 flex items-center justify-between ${
+                      className={`w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 flex items-center justify-between border ${
                         activeCategory === cat
-                          ? "bg-[#7c5cbf]/20 text-[#c4a8f0] border border-[#7c5cbf]/30"
-                          : "text-white/50 hover:text-white/80 hover:bg-white/[0.04] border border-transparent"
+                          ? "bg-[#7c5cbf]/20 text-[#c4a8f0] border-[#7c5cbf]/30"
+                          : "text-white/50 hover:text-white/80 hover:bg-white/[0.04] border-transparent"
                       }`}
                     >
                       <span>{cat}</span>
@@ -430,7 +371,6 @@ export default function AllPosts() {
               </div>
             </div>
 
-            {/* Status */}
             <div>
               <p className="text-white/30 text-[10px] font-bold tracking-[0.18em] uppercase mb-3">
                 Status
@@ -456,10 +396,9 @@ export default function AllPosts() {
             </div>
           </aside>
 
-          {/* List */}
+          {/* Post list */}
           <div>
-            {/* Sort + count bar */}
-            <div className="au4 flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <p className="text-white/40 text-sm">
                 Showing{" "}
                 <span className="text-white font-semibold">
@@ -478,112 +417,148 @@ export default function AllPosts() {
                 <option value="oldest" className="bg-[#1a1a2e]">
                   Oldest first
                 </option>
-                <option value="popular" className="bg-[#1a1a2e]">
-                  Most viewed
-                </option>
               </select>
             </div>
 
-            {/* Rows */}
             <div className="space-y-2.5">
-              {visible.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              ) : visible.length === 0 ? (
                 <div className="text-center py-20 text-white/25 text-sm">
                   No posts match your filters.
                 </div>
               ) : (
-                visible.map((post, i) => (
+                visible.map((post) => (
                   <div
-                    key={post.id}
-                    className={`group bg-[#16162a] border border-white/[0.07] rounded-2xl p-4 flex items-center gap-4 hover:border-[#7c5cbf]/30 hover:bg-[#1c1c35] transition-all duration-200 card-r${Math.min(i + 1, 9)}`}
+                    key={post.$id}
+                    className="group bg-[#16162a] border border-white/[0.07] rounded-2xl p-4 flex items-center gap-4 hover:border-[#7c5cbf]/30 hover:bg-[#1c1c35] transition-all duration-200 cursor-pointer"
+                    onClick={() => navigate(`/post/${post.$id}`)}
                   >
-                    {/* Thumb */}
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-[60px] h-[60px] rounded-xl object-cover flex-shrink-0 opacity-75 group-hover:opacity-100 transition-opacity"
-                    />
+                    {/* Thumbnail */}
+                    <div className="w-[60px] h-[60px] rounded-xl overflow-hidden flex-shrink-0 bg-[#0e0e1c]">
+                      {post.featuredImage ? (
+                        <img
+                          src={appwriteService.getFilePreview(
+                            post.featuredImage,
+                          )}
+                          alt={post.title}
+                          className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="rgba(255,255,255,0.15)"
+                            strokeWidth="1.5"
+                          >
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M8.5 8.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                            <polyline points="21 15 16 10 5 21" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <span className="text-[10px] font-bold tracking-wider uppercase text-[#c4a8f0] bg-[#7c5cbf]/20 border border-[#7c5cbf]/25 rounded-md px-2 py-0.5">
-                          {post.category}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold border rounded-md px-2 py-0.5 ${STATUS_STYLE[post.status]}`}
-                        >
-                          {post.status}
-                        </span>
+                        {post.category && (
+                          <span
+                            className={`text-[10px] font-bold tracking-wider uppercase border rounded-md px-2 py-0.5 ${CAT_COLOR[post.category] || "bg-white/10 text-white/50 border-white/10"}`}
+                          >
+                            {post.category}
+                          </span>
+                        )}
+                        {post.status && (
+                          <span
+                            className={`text-[10px] font-semibold border rounded-md px-2 py-0.5 ${STATUS_STYLE[post.status] || ""}`}
+                          >
+                            {post.status}
+                          </span>
+                        )}
+                        {post.tags?.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[10px] text-white/30 bg-white/[0.05] border border-white/[0.07] rounded-md px-1.5 py-0.5"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
                       </div>
                       <h3 className="text-white text-[14px] font-semibold leading-snug line-clamp-1 mb-1 group-hover:text-[#c4a8f0] transition-colors">
                         {post.title}
                       </h3>
+                      {/* ✅ Author name + date row */}
                       <div className="flex items-center gap-2 text-[11px] text-white/35 flex-wrap">
-                        <span>{post.author}</span>
-                        <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
-                        <span>{post.date}</span>
-                        <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
-                        <span>{post.readTime} read</span>
-                        {post.status === "Published" && (
+                        {post.authorName && (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-4 h-4 rounded-full bg-[#7c5cbf]/30 border border-[#7c5cbf]/40 flex items-center justify-center text-[8px] font-bold text-[#c4a8f0]">
+                                {post.authorName.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="text-white/50 font-medium">
+                                {post.authorName}
+                              </span>
+                            </div>
+                            <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
+                          </>
+                        )}
+                        <span>{formatDate(post.$createdAt)}</span>
+                        {post.$updatedAt !== post.$createdAt && (
                           <>
                             <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
-                            <span className="flex items-center gap-1">
-                              <svg
-                                width="11"
-                                height="11"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                              </svg>
-                              {post.views.toLocaleString()}
-                            </span>
+                            <span>Updated {formatDate(post.$updatedAt)}</span>
                           </>
                         )}
                       </div>
                     </div>
 
-                    {/* Actions — visible on hover */}
-                    <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                      <a
-                        href={`/add-post?edit=${post.id}`}
-                        className="w-8 h-8 rounded-lg bg-[#7c5cbf]/15 border border-[#7c5cbf]/25 flex items-center justify-center text-[#c4a8f0] hover:bg-[#7c5cbf]/30 transition-all no-underline"
-                        title="Edit"
+                    {/* Actions — author only */}
+                    {userData && post.userId === userData.$id && (
+                      <div
+                        className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <svg
-                          width="13"
-                          height="13"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                        <button
+                          onClick={() => navigate(`/edit-post/${post.$id}`)}
+                          className="w-8 h-8 rounded-lg bg-[#7c5cbf]/15 border border-[#7c5cbf]/25 flex items-center justify-center text-[#c4a8f0] hover:bg-[#7c5cbf]/30 transition-all"
+                          title="Edit"
                         >
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </a>
-                      <button
-                        onClick={() => setDeleteTarget(post)}
-                        className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/25 transition-all"
-                        title="Delete"
-                      >
-                        <svg
-                          width="13"
-                          height="13"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(post)}
+                          className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/25 transition-all"
+                          title="Delete"
                         >
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                          <path d="M10 11v6M14 11v6" />
-                        </svg>
-                      </button>
-                    </div>
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -613,7 +588,7 @@ export default function AllPosts() {
                     <button
                       key={n}
                       onClick={() => setPage(n)}
-                      className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+                      className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-all ${
                         page === n
                           ? "bg-[#7c5cbf] border-[#7c5cbf] text-white"
                           : "bg-transparent border-white/10 text-white/45 hover:border-[#7c5cbf]/40 hover:text-white"
